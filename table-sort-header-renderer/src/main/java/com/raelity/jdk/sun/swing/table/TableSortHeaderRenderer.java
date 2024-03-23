@@ -35,7 +35,6 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.Serializable;
-import java.util.function.BiFunction;
 
 import javax.swing.*;
 import javax.swing.plaf.UIResource;
@@ -53,11 +52,6 @@ public class TableSortHeaderRenderer extends DefaultTableCellRenderer
     private boolean horizontalTextPositionSet;
     private Icon sortArrow;
     private EmptyIcon emptyIcon = new EmptyIcon();
-    private BiFunction<Integer, Integer, String> toolTipGenerator
-            = (sortIndex, column) -> (sortIndex == null ? null
-                                      : ((sortIndex == 0 ? "primary"
-                                      : sortIndex == 1 ? "secondary"
-                                      : "tertiary") + " sort key"));
     
     static {
         // Establish developer default values, no change if key already exists.
@@ -84,24 +78,6 @@ public class TableSortHeaderRenderer extends DefaultTableCellRenderer
         setHorizontalAlignment(JLabel.CENTER);
     }
     
-    /**
-     * Set the function used to generate a column header's toolTip. The function's
-     * parameters are index and column respectively;
-     * index is null if the column is not part of sort.
-     * Note that even if index is null, column is valid.
-     * The default function returns null unless the column is part of a sort;
-     * when the column is part of the sort, somehing like
-     * "secondary sort key" is returned; the default does not use the column
-     * parameter.
-     * <p>
-     * If the column parameter is used by the function, the method
-     * {@link JTable#convertColumnIndexToModel(int)} may be useful.
-     * @param toolTipGenerator
-     */
-    public void setToolTipGenerator(BiFunction<Integer, Integer, String> toolTipGenerator) {
-        this.toolTipGenerator = toolTipGenerator;
-    }
-    
     /** {@inheritDoc} */
     @Override
     public void setHorizontalTextPosition(int textPosition) {
@@ -121,6 +97,7 @@ public class TableSortHeaderRenderer extends DefaultTableCellRenderer
         boolean isPaintingForPrint = false;
         
         Integer keyIndex = null;
+        SortOrder sortOrder = null;
         if (table != null) {
             JTableHeader header = table.getTableHeader();
             if (header != null) {
@@ -151,7 +128,7 @@ public class TableSortHeaderRenderer extends DefaultTableCellRenderer
                     setHorizontalTextPosition(JLabel.LEADING);
                 }
                 ColumnSortOrder result = getColumnSortOrder(table, column);
-                SortOrder sortOrder = result.sortOrder();
+                sortOrder = result.sortOrder();
                 keyIndex = result.keyIndex();
                 if (sortOrder != null) {
                     String iconLookupKey = switch(sortOrder) {
@@ -166,7 +143,7 @@ public class TableSortHeaderRenderer extends DefaultTableCellRenderer
             }
         }
         
-        setToolTipText(toolTipGenerator.apply(keyIndex, column));
+        setToolTipText(generateToolTip(keyIndex, column, sortOrder));
         setText(value == null ? "" : value.toString());
         setIcon(sortIcon);
         sortArrow = sortIcon;
@@ -181,6 +158,30 @@ public class TableSortHeaderRenderer extends DefaultTableCellRenderer
         setBorder(border);
         
         return this;
+    }
+
+    /**
+     * Method to generate a column header's toolTip. The parameters
+     * are keyIndex and column respectively;
+     * when keyIndex is null, the column is not part of sort.
+     * Note that even if keyIndex is null, column is valid.
+     * When the column is part of the sort, a string like
+     * "secondary sort key" is returned;
+     * returns null by default, unless the column is part of a sort.
+     * <p>
+     * If this method is overriden and the column parameter is used by the function,
+     * the method {@link JTable#convertColumnIndexToModel(int)} may be useful.
+     * @param sortKeyIndex zero based, may be null
+     * @param column table column
+     * @param sortOrder columns sort order, may be null
+     * @return the ToolTip, null if no ToolTip
+     */
+    protected String generateToolTip(Integer sortKeyIndex, Integer column, SortOrder sortOrder) {
+            return sortKeyIndex == null ? null
+                   : ((sortKeyIndex == 0 ? "primary"
+                       : sortKeyIndex == 1 ? "secondary"
+                         : "tertiary")
+                   + " sort key");
     }
 
     /** return array { sortOrder, keyIndex } or null if none. */
