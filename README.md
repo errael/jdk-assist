@@ -10,7 +10,7 @@ When sorting, the regular Java Swing JTable column header cell renderer only dis
 The artifact is `jdk1.8` compatible.
 
 A simple way to use this is:
-```
+```java
 class MyTable extends JTable
 {
     @Override
@@ -24,7 +24,7 @@ class MyTable extends JTable
     }
 }
 ```
-```
+```xml
 <dependency>
     <groupId>com.raelity.jdk</groupId>
     <artifactId>table-sort-header-renderer</artifactId>
