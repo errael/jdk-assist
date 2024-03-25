@@ -2,10 +2,11 @@
 
 ![multi-key-header-with-tooltip](images/multi-key-header-with-tooltip.png)
 
-When sorting, the regular Java Swing JTable column header cell renderer only displays ascending/descending arrows for the primary key column; and the code is hidden away under `package sun.swing`. This project's artifact handles those problems.
+When sorting, the regular Java Swing JTable column header cell renderer only displays ascending/descending arrows for the primary key column; and the code is inaccessible and hidden away under `package sun.swing`. This project's artifact handles those problems.
 - colored arrows and column header ToolTips are defined for up to 3 sort keys
 - developers can define their own icons and ToolTips
 - developers can add additional icons, used if more that 3 sort keys are enabled
+- the renderer can be extended, for example to customize the ToolTips
 
 The artifact is `jdk1.8` compatible.
 
